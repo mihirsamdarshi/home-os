@@ -1,13 +1,17 @@
-name: build
+name: check 
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "backend/**"
   pull_request:
     branches:
       - main
       - develop
+    paths:
+      - "backend/**"
   workflow_dispatch:
 
 env:
@@ -17,12 +21,13 @@ jobs:
   build:
     strategy:
       fail-fast: true
-    timeout-minutes: 70
+    timeout-minutes: 20
 
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
+        working-directory: backend/
 
     steps:
       - uses: actions/checkout@v3
