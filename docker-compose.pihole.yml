@@ -1,0 +1,187 @@
+version: "3"
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000/tcp"
+      - "9443:9443/tcp"
+    environment:
+      - TZ=America/Los_Angeles
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.container_data/portainer/data:/data
+    labels:
+      - traefik.http.routers.portainer.rule=PathPrefix(`/portainer`)
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+      - traefik.http.middlewares.portainer.stripprefix.prefixes=/portainer
+
+  pihole:
+    image: docker.io/pihole/pihole:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80/tcp"
+    environment:
+      - TZ=America/Los_Angeles
+      - WEBPASSWORD=${PIHOLE_WEBPASSWORD}
+    # Volumes store your data between container upgrades
+    volumes:
+      - "./.container_data/pihole:/etc/pihole"
+      - "./.container_data/dnsmasq.d:/etc/dnsmasq.d"
+    restart: unless-stopped
+    runtime: crun
+    labels:
+      - traefik.http.routers.pihole.rule=PathPrefix(`/pihole`)
+      - traefik.http.services.pihole.loadbalancer.server.port=80
+      - traefik.http.middlewares.pihole.stripprefix.prefixes=/pihole
+
+  airupnp:
+    build: services/airupnp/
+    restart: always
+    network_mode: host
+    runtime: crun
+    labels:
+      - traefik.enable=false
+
+  cloudflared:
+    image: cloudflare/cloudflared
+    restart: unless-stopped
+    command: tunnel --loglevel debug run
+    network_mode: host
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    volumes:
+      - "./.container_data/cloudflare:/root/.cloudflared"
+    labels:
+      - traefik.enable=false
+
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    environment:
+      - TZ=America/Los_Angeles
+    command:
+      - --api.insecure=true # remove in production
+      - --providers.docker
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --global.sendAnonymousUsage=false
+    ports:
+      - 8080:80
+      - 8443:443
+      - 27896:8080 # web UI (enabled with api.insecure)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/certificates:/certificates
+
+  headscale:
+    image: headscale/headscale:latest
+    volumes:
+      - "./services/headscale/config:/root/.headscale"
+      - "./.container_data/headscale:/etc/headscale"
+      - "./.container_data/headscale_data:/var/lib/headscale"
+    command: headscale serve
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.headscale-rtr.rule=PathPrefix(`/`)
+      - traefik.http.services.headscale-svc.loadbalancer.server.port=8080
+
+  headscale-ui:
+    image: ghcr.io/gurucomputing/headscale-ui:latest
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.headscale-ui-rtr.rule=PathPrefix(`/web`)
+      - traefik.http.services.headscale-ui-svc.loadbalancer.server.port=80
+
+  homeassistant:
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - ./services/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    depends_on:
+      - mariadb
+      - influxdb
+      - mosquitto
+
+  hass-configurator:
+    image: causticlab/hass-configurator-docker
+    restart: unless-stopped
+    ports:
+      - "3218:3218/tcp"
+    volumes:
+      - ./services/hassconf/config:/config
+      - ./services/homeassistant/config:/hass-config
+    depends_on:
+      - homeassistant
+
+  mosquitto:
+    image: eclipse-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883/tcp"
+    environment:
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./services/mosquitto/config:/mosquitto/config
+      - ./.container_data/mosquitto/data:/mosquitto/data
+      - ./.container_data/mosquitto/log:/mosquitto/log
+      - /etc/localtime:/etc/localtime:ro
+    stdin_open: true
+    tty: true
+
+  mariadb:
+    image: mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306/tcp"
+    environment:
+      - TZ=America/Los_Angeles
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_HA_DATABASE}
+      - MYSQL_USER=${MYSQL_HA_USER}
+      - MYSQL_PASSWORD=${MYSQL_HA_PASSWORD}
+    volumes:
+      - ./.container_data/mariadb/data:/var/lib/mysql
+      - ./.container_data/mariadb/config/:/etc/mysql/conf.d
+
+  influxdb:
+    image: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086/tcp"   # So we can access the WebUI
+    environment:
+      - TZ=America/Los_Angeles
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+    volumes:
+      - ./.container_data/influxdb/data:/var/lib/influxdb2
+      - ./.container_data/influxdb/config/:/etc/influxdb2
+    ulimits:
+      nofile:
+        soft: 32768
+        hard: 32768
+
+  nodered:
+    image: nodered/node-red
+    restart: unless-stopped
+    ports:
+      - "1880:1880/tcp"
+    environment:
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./.container_data/nodered/data:/data
+    depends_on:
+      - homeassistant
+      - mosquitto

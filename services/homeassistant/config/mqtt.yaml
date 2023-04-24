@@ -1,0 +1,12 @@
+fan:
+  - name: "Vornado Fan"
+    state_topic: "vornado/on/state"
+    command_topic: "vornado/on/set"
+    command_template: "{ state: '{{ value }}'}"
+    percentage_state_topic: "vornado/speed/percentage_state"
+    percentage_command_topic: "vornado/speed/percentage"
+    percentage_command_template: "{ percentage: '{{ value }}'}"
+    payload_on: "true"
+    payload_off: "false"
+    speed_range_min: 1
+    speed_range_max: 3

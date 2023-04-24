@@ -1,0 +1,61 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+mqtt: !include mqtt.yaml
+
+recorder:
+  db_url: !secret mariadb
+  purge_keep_days: 10   # default
+
+history:
+
+influxdb:
+  api_version: 2
+  ssl: false
+  host: !secret influxdb_host
+  port: 8086
+  token: !secret influxdb_token
+  organization: !secret influx_org
+  bucket: homeassistant
+  tags:
+    source: HomeAssistant
+  tags_attributes:
+    - friendly_name
+  default_measurement: units
+  ignore_attributes:
+    - icon
+  exclude:    # Customise to fit your needs
+    entities:
+      - zone.home
+    domains:
+      - persistent_notification
+      - person
+
+panel_iframe:
+  portainer:
+    title: Portainer
+    url: "http://100.95.76.91:9000/#!/2/docker/containers"
+    icon: mdi:docker
+    require_admin: true
+  nodered:
+    title: Node-RED
+    icon: mdi:lan
+    url: http://100.95.76.91:1880
+    require_admin: true
+  configurator:
+    title: Configurator
+    icon: mdi:wrench
+    url: http://100.95.76.91:3218
+    require_admin: true

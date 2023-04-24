@@ -2,37 +2,65 @@ version: "3"
 
 # More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
 services:
+  traefik:
+    restart: always
+    image: traefik:v2.9
+    ports:
+      # The HTTP port
+      - "80:80"
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+
   pihole:
     container_name: pihole
     image: pihole/pihole:latest
-    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-      - "8000/tcp"
+      - "12322:80/tcp"
     environment:
       TZ: 'America/Los_Angeles'
-      # WEBPASSWORD: 'set a secure password here or it will be random'
+      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
     # Volumes store your data between container upgrades
     volumes:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'
-    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     restart: unless-stopped
+    labels:
+      - "traefik.http.routers.pihole.rule=PathPrefix(`/pihole`)"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      - "traefik.http.routers.pihole.entrypoints=https"
+      - "traefik.http.middlewares.pihole.stripprefix.prefixes=/pihole"
 
   airupnp:
-    build: services/airupnp.Dockerfile
+    build: services/airupnp/
     restart: always
+    network_mode: host
+    labels:
+      - "traefik.enable=false"
 
-  dashboard-backend:
+  backend:
     build: backend/
     ports:
-      - 8000
+      - "8080"
     restart: always
+    labels:
+      - "traefik.http.routers.backend.entrypoints=https"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
 
-  dashboard-frontend:
+  frontend:
     build: frontend/
     ports:
-      - "3000:80"
+      - "3000"
     restart: always
-
+    labels:
+      - "traefik.http.routers.frontend.entrypoints=https"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"

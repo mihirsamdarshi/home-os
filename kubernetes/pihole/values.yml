@@ -1,0 +1,67 @@
+---
+
+persistentVolumeClaim:
+  enabled: true
+ingress:
+  enabled: true
+dnsmasq:
+  customDnsEntries:
+    - address=/proxmox.local.samdarshi.cc/192.168.7.61
+# If using in the real world, set up admin.existingSecret instead.
+adminPassword: password
+
+serviceWeb:
+  loadBalancerIP: 192.168.5.201
+  annotations:
+    metallb.universe.tf/allow-shared-ip: pihole-svc
+  type: LoadBalancer
+
+serviceDns:
+  loadBalancerIP: 192.168.5.201
+  annotations:
+    metallb.universe.tf/allow-shared-ip: pihole-svc
+  type: LoadBalancer
+
+ingress:
+    # -- Generate a Ingress resource
+  enabled: false
+
+  # -- Specify an ingressClassName
+  # ingressClassName: nginx
+
+  # -- Annotations for the ingress
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  path: /
+  hosts:
+    # virtualHost (default value is pi.hole) will be appended to the hosts
+    - chart-example.local
+  tls: []
+   - secretName: chart-example-tls
+     hosts:
+      #- virtualHost (default value is pi.hole) will be appended to the hosts
+       - chart-example.local
+
+image:
+  # -- the repostory to pull the image from
+  repository: "pihole/pihole"
+  # -- the docker tag, if left empty it will get it from the chart's appVersion
+  tag: "2023.03.1"
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+dnsmasq:
+  adlists:
+    # If you want to provide blocklists, add them here.
+    - https://hosts-file.net/grm.txt
+    - https://reddestdream.github.io/Projects/MinimalHosts/etc/MinimalHostsBlocker/minimalhosts
+
+extraEnvVars:
+  TZ: America/Los_Angeles
