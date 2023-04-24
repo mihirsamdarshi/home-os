@@ -26,6 +26,7 @@
             block: |
               127.0.1.1   {{ inventory_hostname }}
     - name: Packages | Fedora
+      when: ansible_facts['distribution'] == 'Fedora'
       block:
         - name: Packages | Install required packages
           ansible.builtin.dnf:
@@ -35,24 +36,23 @@
         - name: Packages | Remove leaf packages
           ansible.builtin.dnf:
             autoremove: true
-      when: ansible_facts['distribution'] == 'Fedora'
     - name: Packages | Ubuntu
+      when: ansible_facts['distribution'] == 'Ubuntu'
       block:
         - name: Packages | Install required packages
-          ansible.builtin.apt:
+          apt:
             name: "{{ ubuntu.packages | default([]) }}"
             state: present
             update_cache: true
         - name: Packages | Remove leaf packages
-          ansible.builtin.apt:
+          apt:
             autoremove: true
         - name: Packages | RasPi packages
-          ansible.builtin.apt:
+          when: "'raspi' in ansible_kernel"
+          apt:
             name: ["linux-modules-extra-raspi"]
             install_recommends: false
           notify: Reboot
-          when: "'raspi' in ansible_kernel"
-      when: ansible_facts['distribution'] == 'Ubuntu'
     - name: User Configuration
       block:
         - name: User Configuration | Add additional SSH public keys

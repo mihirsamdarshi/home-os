@@ -38,13 +38,13 @@ spec:
       ingressClassName: "traefik"
       annotations:
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        external-dns.alpha.kubernetes.io/target: "ipv4.${SECRET_PUBLIC_DOMAIN}"
+        external-dns.alpha.kubernetes.io/target: "local.${SECRET_PUBLIC_DOMAIN}"
         external-dns/is-public: "true"
       subdomain: auth
       traefikCRD:
         enabled: true
         disableIngressRoute: true
-        entryPoints: 
+        entryPoints:
           - websecure
     pod:
       kind: Deployment

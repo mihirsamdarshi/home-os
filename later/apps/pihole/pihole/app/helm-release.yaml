@@ -33,8 +33,8 @@ spec:
     replicaCount: 1
     serviceDns:
       type: LoadBalancer
-      loadBalancerIP: "${PIHOLE_ENDPOINT}" 
-      # externalIPs: 
+      loadBalancerIP: "${PIHOLE_ENDPOINT}"
+      # externalIPs:
       #   - ${PIHOLE_ENDPOINT}
       externalTrafficPolicy: Cluster
       annotations:
@@ -51,7 +51,7 @@ spec:
         hajimari.io/icon: "dns"
         traefik.ingress.kubernetes.io/router.entrypoints: websecure
         traefik.ingress.kubernetes.io/router.middlewares: "auth-chain-authelia-auth@kubernetescrd, networking-pihole-dashboard-addprefix@kubernetescrd"
-        external-dns.alpha.kubernetes.io/target: "ipv4.${SECRET_PUBLIC_DOMAIN}"
+        external-dns.alpha.kubernetes.io/target: "local.${SECRET_PUBLIC_DOMAIN}"
         external-dns/is-public: "true"
       hosts:
         - pihole.${SECRET_PUBLIC_DOMAIN}

@@ -8,7 +8,7 @@ spec:
   type: ExternalName
   ports:
   - name: http
-    port: 5000 
+    port: 5000
   externalName: "${NAS0_IP}"
 
 # ---
@@ -18,7 +18,7 @@ spec:
 #   name: nas0-externalroute
 #   namespace: networking
 #   annotations:
-#     kubernetes.io/ingress.class: traefik 
+#     kubernetes.io/ingress.class: traefik
 # spec:
 #   entryPoints:
 #     - websecure
@@ -45,7 +45,7 @@ metadata:
     hajimari.io/icon: "nas"
     hajimari.io/appName: "nas0"
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    external-dns.alpha.kubernetes.io/target: "ipv4.${SECRET_PUBLIC_DOMAIN}"
+    external-dns.alpha.kubernetes.io/target: "local.${SECRET_PUBLIC_DOMAIN}"
     external-dns/is-public: "true"
 spec:
   ingressClassName: traefik

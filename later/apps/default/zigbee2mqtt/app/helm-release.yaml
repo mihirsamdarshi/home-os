@@ -44,7 +44,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
           traefik.ingress.kubernetes.io/router.middlewares: "auth-chain-authelia-auth@kubernetescrd"
-          external-dns.alpha.kubernetes.io/target: "ipv4.${SECRET_PUBLIC_DOMAIN}"
+          external-dns.alpha.kubernetes.io/target: "local.${SECRET_PUBLIC_DOMAIN}"
           external-dns/is-public: "true"
         hosts:
           - host: &host "{{ .Release.Name }}.${SECRET_PUBLIC_DOMAIN}"
@@ -76,7 +76,7 @@ spec:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
-          # note: label node like this 
+          # note: label node like this
           # kubectl label nodes k3s-agent5 app=zigbee-controller
           - matchExpressions:
             - key: app
@@ -94,4 +94,4 @@ spec:
 
  # this also includes when the kernel updates, you need to install the newer modules
  # probably should look for a long term fix...
- 
+
