@@ -1,0 +1,28 @@
+- hosts: "*"
+  become: yes
+  tasks:
+    - name: apt
+      apt:
+        update_cache: yes
+        upgrade: 'yes'
+
+    - name: apt
+      apt:
+        update_cache: yes
+        upgrade: 'dist'
+
+    - name: Add nginx stable repository from PPA and install its signing key on Ubuntu target
+      ansible.builtin.apt_repository:
+        repo: ppa:fish-shell/release-3
+
+    - name: apt
+      apt:
+        update_cache: yes
+        upgrade: 'yes'
+
+    - name: install fish
+      apt:
+        name: fish
+        state: present
+        update_cache: true
+      become: true
