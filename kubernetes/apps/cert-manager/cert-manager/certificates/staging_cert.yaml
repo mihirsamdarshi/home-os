@@ -5,11 +5,11 @@ metadata:
   name: local-samdarshi-cc
   namespace: default
 spec:
-  secretName: local-samdarshi-cc-tls
+  secretName: local-samdarshi-cc-staging-tls
   issuerRef:
-    name: letsencrypt-production
+    name: letsencrypt-staging
     kind: ClusterIssuer
-  commonName: "*.local.samdarshi.cc"
+  commonName: "*.${SECRET_DOMAIN}"
   dnsNames:
-  - "local.samdarshi.cc"
-  - "*.local.samdarshi.cc"
+  - "${SECRET_DOMAIN}"
+  - "*.${SECRET_DOMAIN}"

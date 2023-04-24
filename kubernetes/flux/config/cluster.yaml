@@ -1,35 +1,33 @@
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: home-ops-cluster
+  name: home-kubernetes
   namespace: flux-system
 spec:
-  interval: 1m
-  url: ssh://git@github.com/lucidph3nx/home-ops
+  interval: 30m
   ref:
     branch: main
-  secretRef:
-    name: github-deploy-key
+  url: "https://github.com/mihirsamdarshi/home-os"
   ignore: |
     # exclude all
     /*
     # include kubernetes directory
-    !/cluster
+    !/kubernetes
 ---
-apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: cluster
   namespace: flux-system
 spec:
-  interval: 10m0s
-  path: ./cluster/flux
+  interval: 30m
+  path: ./kubernetes/flux
   prune: true
   wait: false
   sourceRef:
     kind: GitRepository
-    name: home-ops-cluster
+    name: home-kubernetes
   decryption:
     provider: sops
     secretRef:
@@ -38,8 +36,5 @@ spec:
     substituteFrom:
       - kind: ConfigMap
         name: cluster-settings
-        optional: false
       - kind: Secret
         name: cluster-secrets
-        optional: false
-

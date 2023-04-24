@@ -14,5 +14,3 @@ I want to be able to access a dashboard and view the statuses of each of these
 applications.
 
 I also kind of just want to mess around with SolidJS, SolidStart, and Axum.
-
-
