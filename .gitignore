@@ -60,7 +60,7 @@ secrets.yaml
 .storage/
 .HA_VERSION
 
-# MQTT 
+# MQTT
 mqttuser
 
 # hidden files

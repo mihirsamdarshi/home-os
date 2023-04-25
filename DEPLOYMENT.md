@@ -1,4 +1,3 @@
-
 # Template for deploying k3s backed by Flux
 
 Highly opinionated template for deploying a single [k3s](https://k3s.io) cluster with [Ansible](https://www.ansible.com) and [Terraform](https://www.terraform.io) backed by [Flux](https://toolkit.fluxcd.io/) and [SOPS](https://toolkit.fluxcd.io/guides/mozilla-sops/).
@@ -7,35 +6,35 @@ The purpose here is to showcase how you can deploy an entire Kubernetes cluster 
 
 ## Overview
 
-- [Introduction](https://github.com/onedr0p/flux-cluster-template#-introduction)
-- [Prerequisites](https://github.com/onedr0p/flux-cluster-template#-prerequisites)
-- [Repository structure](https://github.com/onedr0p/flux-cluster-template#-repository-structure)
-- [Lets go!](https://github.com/onedr0p/flux-cluster-template#-lets-go)
-- [Post installation](https://github.com/onedr0p/flux-cluster-template#-post-installation)
-- [Troubleshooting](https://github.com/onedr0p/flux-cluster-template#-troubleshooting)
-- [What's next](https://github.com/onedr0p/flux-cluster-template#-whats-next)
-- [Thanks](https://github.com/onedr0p/flux-cluster-template#-thanks)
+-   [Introduction](https://github.com/onedr0p/flux-cluster-template#-introduction)
+-   [Prerequisites](https://github.com/onedr0p/flux-cluster-template#-prerequisites)
+-   [Repository structure](https://github.com/onedr0p/flux-cluster-template#-repository-structure)
+-   [Lets go!](https://github.com/onedr0p/flux-cluster-template#-lets-go)
+-   [Post installation](https://github.com/onedr0p/flux-cluster-template#-post-installation)
+-   [Troubleshooting](https://github.com/onedr0p/flux-cluster-template#-troubleshooting)
+-   [What's next](https://github.com/onedr0p/flux-cluster-template#-whats-next)
+-   [Thanks](https://github.com/onedr0p/flux-cluster-template#-thanks)
 
 ## 👋 Introduction
 
 The following components will be installed in your [k3s](https://k3s.io/) cluster by default. Most are only included to get a minimum viable cluster up and running.
 
-- [flux](https://toolkit.fluxcd.io/) - GitOps operator for managing Kubernetes clusters from a Git repository
-- [kube-vip](https://kube-vip.io/) - Load balancer for the Kubernetes control plane nodes
-- [metallb](https://metallb.universe.tf/) - Load balancer for Kubernetes services
-- [cert-manager](https://cert-manager.io/) - Operator to request SSL certificates and store them as Kubernetes resources
-- [calico](https://www.tigera.io/project-calico/) - Container networking interface for inter pod and service networking
-- [external-dns](https://github.com/kubernetes-sigs/external-dns) - Operator to publish DNS records to Cloudflare (and other providers) based on Kubernetes ingresses
-- [k8s_gateway](https://github.com/ori-edge/k8s_gateway) - DNS resolver that provides local DNS to your Kubernetes ingresses
-- [ingress-nginx](https://kubernetes.github.io/ingress-nginx/) - Kubernetes ingress controller used for a HTTP reverse proxy of Kubernetes ingresses
-- [local-path-provisioner](https://github.com/rancher/local-path-provisioner) - provision persistent local storage with Kubernetes
+-   [flux](https://toolkit.fluxcd.io/) - GitOps operator for managing Kubernetes clusters from a Git repository
+-   [kube-vip](https://kube-vip.io/) - Load balancer for the Kubernetes control plane nodes
+-   [metallb](https://metallb.universe.tf/) - Load balancer for Kubernetes services
+-   [cert-manager](https://cert-manager.io/) - Operator to request SSL certificates and store them as Kubernetes resources
+-   [calico](https://www.tigera.io/project-calico/) - Container networking interface for inter pod and service networking
+-   [external-dns](https://github.com/kubernetes-sigs/external-dns) - Operator to publish DNS records to Cloudflare (and other providers) based on Kubernetes ingresses
+-   [k8s_gateway](https://github.com/ori-edge/k8s_gateway) - DNS resolver that provides local DNS to your Kubernetes ingresses
+-   [ingress-nginx](https://kubernetes.github.io/ingress-nginx/) - Kubernetes ingress controller used for a HTTP reverse proxy of Kubernetes ingresses
+-   [local-path-provisioner](https://github.com/rancher/local-path-provisioner) - provision persistent local storage with Kubernetes
 
 _Additional applications include [hajimari](https://github.com/toboshii/hajimari), [error-pages](https://github.com/tarampampam/error-pages), [echo-server](https://github.com/Ealenn/Echo-Server), [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller), [reloader](https://github.com/stakater/Reloader), and [kured](https://github.com/weaveworks/kured)_
 
 For provisioning the following tools will be used:
 
-- [Ansible](https://www.ansible.com) - Sets up the operating system and installs k3s
-- [Terraform](https://www.terraform.io) - Provisions an existing Cloudflare domain and certain DNS records to be used with your Kubernetes cluster
+-   [Ansible](https://www.ansible.com) - Sets up the operating system and installs k3s
+-   [Terraform](https://www.terraform.io) - Provisions an existing Cloudflare domain and certain DNS records to be used with your Kubernetes cluster
 
 ## 📝 Prerequisites
 
@@ -45,14 +44,14 @@ First and foremost some experience in debugging/troubleshooting problems **and a
 
 ### 📚 Reading material
 
-- [Organizing Cluster Access Using kubeconfig Files](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/)
+-   [Organizing Cluster Access Using kubeconfig Files](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/)
 
 ### 💻 Systems
 
-- One or more nodes with a fresh install of [Fedora Server 37](https://getfedora.org/en/server/download/) or [Ubuntu 22.04 Server](https://ubuntu.com/download/server) (not minimal).
-    - These nodes can be ARM64/AMD64 bare metal or VMs.
-    - An odd number of control plane nodes, greater than or equal to 3 is required if deploying more than one control plane node.
-- A [Cloudflare](https://www.cloudflare.com/) account with a domain, this will be managed by Terraform and external-dns. You can [register new domains](https://www.cloudflare.com/products/registrar/) directly thru Cloudflare.
+-   One or more nodes with a fresh install of [Fedora Server 37](https://getfedora.org/en/server/download/) or [Ubuntu 22.04 Server](https://ubuntu.com/download/server) (not minimal).
+  - These nodes can be ARM64/AMD64 bare metal or VMs.
+  - An odd number of control plane nodes, greater than or equal to 3 is required if deploying more than one control plane node.
+-   A [Cloudflare](https://www.cloudflare.com/) account with a domain, this will be managed by Terraform and external-dns. You can [register new domains](https://www.cloudflare.com/products/registrar/) directly thru Cloudflare.
 
 📍 It is recommended to have 3 master nodes for a highly available control plane.
 
@@ -81,13 +80,14 @@ Clone **your new repo** to you local workstation and `cd` into it.
 
 1. Install the following CLI tools on your workstation, if you are **NOT** using [Homebrew](https://brew.sh/) on MacOS or Linux **ignore** steps 4 and 5.
 
-    * Required: [age](https://github.com/FiloSottile/age), [ansible](https://www.ansible.com), [flux](https://toolkit.fluxcd.io/), [weave-gitops](https://docs.gitops.weave.works/docs/installation/weave-gitops/), [go-task](https://github.com/go-task/task), [direnv](https://github.com/direnv/direnv), [ipcalc](http://jodies.de/ipcalc), [jq](https://stedolan.github.io/jq/), [kubectl](https://kubernetes.io/docs/tasks/tools/), [python-pip3](https://pypi.org/project/pip/), [pre-commit](https://github.com/pre-commit/pre-commit), [sops v3](https://github.com/mozilla/sops), [terraform](https://www.terraform.io), [yq v4](https://github.com/mikefarah/yq)
+    - Required: [age](https://github.com/FiloSottile/age), [ansible](https://www.ansible.com), [flux](https://toolkit.fluxcd.io/), [weave-gitops](https://docs.gitops.weave.works/docs/installation/weave-gitops/), [go-task](https://github.com/go-task/task), [direnv](https://github.com/direnv/direnv), [ipcalc](http://jodies.de/ipcalc), [jq](https://stedolan.github.io/jq/), [kubectl](https://kubernetes.io/docs/tasks/tools/), [python-pip3](https://pypi.org/project/pip/), [pre-commit](https://github.com/pre-commit/pre-commit), [sops v3](https://github.com/mozilla/sops), [terraform](https://www.terraform.io), [yq v4](https://github.com/mikefarah/yq)
 
-    * Recommended: [helm](https://helm.sh/), [kustomize](https://github.com/kubernetes-sigs/kustomize), [stern](https://github.com/stern/stern), [yamllint](https://github.com/adrienverge/yamllint)
+    - Recommended: [helm](https://helm.sh/), [kustomize](https://github.com/kubernetes-sigs/kustomize), [stern](https://github.com/stern/stern), [yamllint](https://github.com/adrienverge/yamllint)
 
 2. This guide heavily relies on [go-task](https://github.com/go-task/task) as a framework for setting things up. It is advised to learn and understand the commands it is running under the hood.
 
 3. Install Python 3 and pip3 using your Linux OS package manager, or Homebrew if using MacOS.
+
     - Ensure `pip3` is working on your command line by running `pip3 --version`
 
 4. [Homebrew] Install [go-task](https://github.com/go-task/task)
@@ -162,7 +162,7 @@ In order to use Terraform and `cert-manager` with the Cloudflare DNS challenge y
 
 1. Copy the `.config.sample.env` to `.config.env` and start filling out all the environment variables.
 
-   **All are required** unless otherwise noted in the comments.
+    **All are required** unless otherwise noted in the comments.
 
     ```sh
     cp .config.sample.env .config.env
@@ -188,7 +188,7 @@ In order to use Terraform and `cert-manager` with the Cloudflare DNS challenge y
 
 1. Ensure you are able to SSH into your nodes from your workstation using a private SSH key **without a passphrase**. This is how Ansible is able to connect to your remote nodes.
 
-   [How to configure SSH key-based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server)
+    [How to configure SSH key-based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server)
 
 2. Install the Ansible deps
 
@@ -297,7 +297,7 @@ The cluster application [external-dns](https://github.com/kubernetes-sigs/extern
 
 2. Push you changes to git
 
-   📍 **Verify** all the `*.sops.yaml` and `*.sops.yml` files under the `./ansible`, `./kubernetes`, and `./terraform` folders are **encrypted** with SOPS
+    📍 **Verify** all the `*.sops.yaml` and `*.sops.yml` files under the `./ansible`, `./kubernetes`, and `./terraform` folders are **encrypted** with SOPS
 
     ```sh
     git add -A
@@ -396,7 +396,7 @@ task cluster:resources
 
 You can also try debugging with the command `dig`, e.g. `dig @${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR} hajimari.${BOOTSTRAP_CLOUDFLARE_DOMAIN}` and you should get a valid answer containing your `${BOOTSTRAP_METALLB_INGRESS_ADDR}` IP address.
 
-If your router (or Pi-Hole, Adguard Home or whatever) supports conditional DNS forwarding (also know as split-horizon DNS) you may have DNS requests for `${SECRET_DOMAIN}` only point to the  `${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR}` IP address. This will ensure only DNS requests for `${SECRET_DOMAIN}` will only get routed to your [k8s_gateway](https://github.com/ori-edge/k8s_gateway) service thus providing DNS resolution to your cluster applications/ingresses.
+If your router (or Pi-Hole, Adguard Home or whatever) supports conditional DNS forwarding (also know as split-horizon DNS) you may have DNS requests for `${SECRET_DOMAIN}` only point to the `${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR}` IP address. This will ensure only DNS requests for `${SECRET_DOMAIN}` will only get routed to your [k8s_gateway](https://github.com/ori-edge/k8s_gateway) service thus providing DNS resolution to your cluster applications/ingresses.
 
 To access services from the outside world port forwarded `80` and `443` in your router to the `${BOOTSTRAP_METALLB_INGRESS_ADDR}` IP, in a few moments head over to your browser and you _should_ be able to access `https://echo-server.${BOOTSTRAP_CLOUDFLARE_DOMAIN}` from a device outside your LAN.
 
@@ -422,7 +422,7 @@ Flux is pull-based by design meaning it will periodically check your git reposit
     # github-receiver   6h8m   True    Receiver initialized with URL: /hook/12ebd1e363c641dc3c2e430ecf3cee2b3c7a5ac9e1234506f6f5f3ce1230e123
     ```
 
-   So if my domain was `onedr0p.com` the full url would look like this:
+    So if my domain was `onedr0p.com` the full url would look like this:
 
     ```text
     https://flux-webhook.onedr0p.com/hook/12ebd1e363c641dc3c2e430ecf3cee2b3c7a5ac9e1234506f6f5f3ce1230e123
@@ -434,7 +434,7 @@ Flux is pull-based by design meaning it will periodically check your git reposit
     sops -d ./kubernetes/apps/flux-system/addons/webhooks/github/secret.sops.yaml | yq .stringData.token
     ```
 
-   **Note:** Don't forget to update the `BOOTSTRAP_FLUX_GITHUB_WEBHOOK_SECRET` variable in your `.config.env` file so it matches the generated secret if applicable
+    **Note:** Don't forget to update the `BOOTSTRAP_FLUX_GITHUB_WEBHOOK_SECRET` variable in your `.config.env` file so it matches the generated secret if applicable
 
 Now that you have the webhook url and secret, it's time to set everything up on the Github repository side. Navigate to the settings of your repository on Github, under "Settings/Webhooks" press the "Add webhook" button. Fill in the webhook url and your secret.
 
@@ -442,13 +442,13 @@ Now that you have the webhook url and secret, it's time to set everything up on 
 
 Rancher's `local-path-provisioner` is a great start for storage but soon you might find you need more features like replicated block storage, or to connect to a NFS/SMB/iSCSI server. Check out the projects below to read up more on some storage solutions that might work for you.
 
-- [rook-ceph](https://github.com/rook/rook)
-- [longhorn](https://github.com/longhorn/longhorn)
-- [openebs](https://github.com/openebs/openebs)
-- [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner)
-- [democratic-csi](https://github.com/democratic-csi/democratic-csi)
-- [csi-driver-nfs](https://github.com/kubernetes-csi/csi-driver-nfs)
-- [synology-csi](https://github.com/SynologyOpenSource/synology-csi)
+-   [rook-ceph](https://github.com/rook/rook)
+-   [longhorn](https://github.com/longhorn/longhorn)
+-   [openebs](https://github.com/openebs/openebs)
+-   [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner)
+-   [democratic-csi](https://github.com/democratic-csi/democratic-csi)
+-   [csi-driver-nfs](https://github.com/kubernetes-csi/csi-driver-nfs)
+-   [synology-csi](https://github.com/SynologyOpenSource/synology-csi)
 
 ### 🔏 Authenticate Flux over SSH
 
@@ -458,8 +458,8 @@ By default this template only works on a public GitHub repository, it is advised
 
 The benefits of a public repository include:
 
-* Debugging or asking for help, you can provide a link to a resource you are having issues with.
-* Adding a topic to your repository of `k8s-at-home` to be included in the [k8s-at-home-search](https://whazor.github.io/k8s-at-home-search/). This search helps people discover different configurations of Helm charts across others Flux based repositories.
+-   Debugging or asking for help, you can provide a link to a resource you are having issues with.
+-   Adding a topic to your repository of `k8s-at-home` to be included in the [k8s-at-home-search](https://whazor.github.io/k8s-at-home-search/). This search helps people discover different configurations of Helm charts across others Flux based repositories.
 
 <details>
   <summary>Expand to read guide on adding Flux SSH authentication</summary>
@@ -496,27 +496,27 @@ The benefits of a public repository include:
     ```sh
     sops --decrypt ./kubernetes/bootstrap/github-deploy-key.sops.yaml | kubectl apply -f -
     ```
-6.  Update `./kubernetes/flux/config/cluster.yaml`:
+6. Update `./kubernetes/flux/config/cluster.yaml`:
     ```yaml
     apiVersion: source.toolkit.fluxcd.io/v1beta2
     kind: GitRepository
     metadata:
-      name: home-kubernetes
-      namespace: flux-system
+        name: home-kubernetes
+        namespace: flux-system
     spec:
-      interval: 10m
-      # 6a: Change this to your user and repo names
-      url: ssh://git@github.com/$user/$repo
-      ref:
-        branch: main
-      secretRef:
-        name: github-deploy-key
+        interval: 10m
+        # 6a: Change this to your user and repo names
+        url: ssh://git@github.com/$user/$repo
+        ref:
+            branch: main
+        secretRef:
+            name: github-deploy-key
     ```
 7. Commit and push changes
 8. Force flux to reconcile your changes
-   ```sh
-   task cluster:reconcile
-   ```
+    ```sh
+    task cluster:reconcile
+    ```
 9. Verify git repository is now using SSH:
     ```sh
     task cluster:gitrepositories
@@ -539,13 +539,20 @@ You should be able to access the dashboard at `https://kubernetes.${SECRET_DOMAI
 Below is a general guide on trying to debug an issue with an resource or application. For example, if a workload/resource is not showing up or a pod has started but in a `CrashLoopBackOff` or `Pending` state.
 
 1. Start by checking all Flux Kustomizations and verify they are healthy.
-- `flux get ks -A`
+
+-   `flux get ks -A`
+
 2. Then check all the Flux Helm Releases and verify they are healthy.
-- `flux get hr -A`
+
+-   `flux get hr -A`
+
 3. Then check the if the pod is present.
-- `kubectl -n <namespace> get pods`
+
+-   `kubectl -n <namespace> get pods`
+
 4. Then check the logs of the pod if its there.
-- `kubectl -n <namespace> logs <pod-name> -f`
+
+-   `kubectl -n <namespace> logs <pod-name> -f`
 
 Note: If a resource exists, running `kubectl -n <namespace> describe <resource> <name>` might give you insight into what the problem(s) could be.
 
@@ -553,8 +560,8 @@ Resolving problems that you have could take some tweaking of your YAML manifests
 
 ## 👉 Help
 
-- Make a post in this repository's GitHub [Discussions](https://github.com/onedr0p/flux-cluster-template/discussions).
-- Start a thread in the `support` or `flux-cluster-template` channel in the [k8s@home](https://discord.gg/k8s-at-home) Discord server.
+-   Make a post in this repository's GitHub [Discussions](https://github.com/onedr0p/flux-cluster-template/discussions).
+-   Start a thread in the `support` or `flux-cluster-template` channel in the [k8s@home](https://discord.gg/k8s-at-home) Discord server.
 
 ## ❔ What's next
 
