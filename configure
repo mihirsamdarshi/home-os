@@ -37,32 +37,32 @@ main() {
         verify_success
     else
         # generate sops configuration file
-        envsubst < "${PROJECT_DIR}/tmpl/.sops.yaml" \
+        envsubst < "${PROJECT_DIR}/provision/tmpl/.sops.yaml" \
             > "${PROJECT_DIR}/.sops.yaml"
         # generate cluster settings
-        envsubst < "${PROJECT_DIR}/tmpl/kubernetes/flux/cluster-settings.yaml" \
+        envsubst < "${PROJECT_DIR}/provision/tmpl/kubernetes/flux/cluster-settings.yaml" \
             > "${PROJECT_DIR}/kubernetes/flux/vars/cluster-settings.yaml"
-        envsubst < "${PROJECT_DIR}/tmpl/kubernetes/flux/cluster.yaml" \
+        envsubst < "${PROJECT_DIR}/provision/tmpl/kubernetes/flux/cluster.yaml" \
             > "${PROJECT_DIR}/kubernetes/flux/config/cluster.yaml"
         # generate secrets
-        envsubst < "${PROJECT_DIR}/tmpl/kubernetes/cluster-secrets.sops.yaml" \
+        envsubst < "${PROJECT_DIR}/provision/tmpl/kubernetes/cluster-secrets.sops.yaml" \
             > "${PROJECT_DIR}/kubernetes/flux/vars/cluster-secrets.sops.yaml"
         sops --encrypt --in-place "${PROJECT_DIR}/kubernetes/flux/vars/cluster-secrets.sops.yaml"
-        envsubst < "${PROJECT_DIR}/tmpl/kubernetes/cert-manager-secret.sops.yaml" \
+        envsubst < "${PROJECT_DIR}/provision/tmpl/kubernetes/cert-manager-secret.sops.yaml" \
             > "${PROJECT_DIR}/kubernetes/apps/cert-manager/cert-manager/issuers/secret.sops.yaml"
         sops --encrypt --in-place "${PROJECT_DIR}/kubernetes/apps/cert-manager/cert-manager/issuers/secret.sops.yaml"
-        envsubst < "${PROJECT_DIR}/tmpl/kubernetes/cloudflare-ddns-secret.sops.yaml" \
+        envsubst < "${PROJECT_DIR}/provision/tmpl/kubernetes/cloudflare-ddns-secret.sops.yaml" \
             > "${PROJECT_DIR}/kubernetes/apps/networking/cloudflare-ddns/app/secret.sops.yaml"
         sops --encrypt --in-place "${PROJECT_DIR}/kubernetes/apps/networking/cloudflare-ddns/app/secret.sops.yaml"
-        envsubst < "${PROJECT_DIR}/tmpl/kubernetes/external-dns-secret.sops.yaml" \
+        envsubst < "${PROJECT_DIR}/provision/tmpl/kubernetes/external-dns-secret.sops.yaml" \
             > "${PROJECT_DIR}/kubernetes/apps/networking/external-dns/app/secret.sops.yaml"
         sops --encrypt --in-place "${PROJECT_DIR}/kubernetes/apps/networking/external-dns/app/secret.sops.yaml"
-        envsubst < "${PROJECT_DIR}/tmpl/terraform/secret.sops.yaml" \
-            > "${PROJECT_DIR}/terraform/cloudflare/secret.sops.yaml"
-        sops --encrypt --in-place "${PROJECT_DIR}/terraform/cloudflare/secret.sops.yaml"
+        envsubst < "${PROJECT_DIR}/provision/tmpl/terraform/secret.sops.yaml" \
+            > "${PROJECT_DIR}/provision/terraform/cloudflare/secret.sops.yaml"
+        sops --encrypt --in-place "${PROJECT_DIR}/provision/terraform/cloudflare/secret.sops.yaml"
         # generate ansible settings
-        envsubst < "${PROJECT_DIR}/tmpl/ansible/kube-vip.yml" \
-            > "${PROJECT_DIR}/ansible/inventory/group_vars/kubernetes/kube-vip.yml"
+        envsubst < "${PROJECT_DIR}/provision/tmpl/ansible/kube-vip.yml" \
+            > "${PROJECT_DIR}/provision/ansible/inventory/group_vars/kubernetes/kube-vip.yml"
         # generate ansible hosts file and secrets
         generate_ansible_hosts
         generate_ansible_host_secrets

@@ -49,8 +49,8 @@ First and foremost some experience in debugging/troubleshooting problems **and a
 ### 💻 Systems
 
 -   One or more nodes with a fresh install of [Fedora Server 37](https://getfedora.org/en/server/download/) or [Ubuntu 22.04 Server](https://ubuntu.com/download/server) (not minimal).
-  - These nodes can be ARM64/AMD64 bare metal or VMs.
-  - An odd number of control plane nodes, greater than or equal to 3 is required if deploying more than one control plane node.
+-   These nodes can be ARM64/AMD64 bare metal or VMs.
+-   An odd number of control plane nodes, greater than or equal to 3 is required if deploying more than one control plane node.
 -   A [Cloudflare](https://www.cloudflare.com/) account with a domain, this will be managed by Terraform and external-dns. You can [register new domains](https://www.cloudflare.com/products/registrar/) directly thru Cloudflare.
 
 📍 It is recommended to have 3 master nodes for a highly available control plane.
@@ -384,15 +384,11 @@ task cluster:resources
 
 ## 📣 Post installation
 
-### 🌱 Environment
-
-[direnv](https://direnv.net/) will make it so anytime you `cd` to your repo's directory it export the required environment variables (e.g. `KUBECONFIG`). To set this up make sure you [hook it into your shell](https://direnv.net/docs/hook.html) and after that is done, run `direnv allow` while in your repos directory.
-
 ### 🌐 DNS
 
 📍 The [external-dns](https://github.com/kubernetes-sigs/external-dns) application created in the `networking` namespace will handle creating public DNS records. By default, `echo-server` and the `flux-webhook` are the only public domain exposed on your Cloudflare domain. In order to make additional applications public you must set an ingress annotation (`external-dns.alpha.kubernetes.io/target`) like done in the `HelmRelease` for `echo-server`. You do not need to use Terraform to create additional DNS records unless you need a record outside the purposes of your Kubernetes cluster (e.g. setting up MX records).
 
-[k8s_gateway](https://github.com/ori-edge/k8s_gateway) is deployed on the IP choosen for `${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR}`. Inorder to test DNS you can point your clients DNS to the `${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR}` IP address and load `https://hajimari.${BOOTSTRAP_CLOUDFLARE_DOMAIN}` in your browser.
+[k8s_gateway](https://github.com/ori-edge/k8s_gateway) is deployed on the IP choosen for `${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR}`. In order to test DNS you can point your clients DNS to the `${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR}` IP address and load `https://hajimari.${BOOTSTRAP_CLOUDFLARE_DOMAIN}` in your browser.
 
 You can also try debugging with the command `dig`, e.g. `dig @${BOOTSTRAP_METALLB_K8S_GATEWAY_ADDR} hajimari.${BOOTSTRAP_CLOUDFLARE_DOMAIN}` and you should get a valid answer containing your `${BOOTSTRAP_METALLB_INGRESS_ADDR}` IP address.
 
@@ -465,11 +461,15 @@ The benefits of a public repository include:
   <summary>Expand to read guide on adding Flux SSH authentication</summary>
 
 1. Generate new SSH key:
+
     ```sh
     ssh-keygen -t ecdsa -b 521 -C "github-deploy-key" -f ./kubernetes/bootstrap/github-deploy.key -q -P ""
     ```
+
 2. Paste public key in the deploy keys section of your repository settings
+
 3. Create sops secret in `./kubernetes/bootstrap/github-deploy-key.sops.yaml` with the contents of:
+
     ```yaml
     apiVersion: v1
     kind: Secret
@@ -488,15 +488,21 @@ The benefits of a public repository include:
             github.com ecdsa-sha2-nistp256 ...
             github.com ssh-rsa ...
     ```
+
 4. Encrypt secret:
+
     ```sh
     sops --encrypt --in-place ./kubernetes/bootstrap/github-deploy-key.sops.yaml
     ```
+
 5. Apply secret to cluster:
+
     ```sh
     sops --decrypt ./kubernetes/bootstrap/github-deploy-key.sops.yaml | kubectl apply -f -
     ```
+
 6. Update `./kubernetes/flux/config/cluster.yaml`:
+
     ```yaml
     apiVersion: source.toolkit.fluxcd.io/v1beta2
     kind: GitRepository
@@ -512,16 +518,22 @@ The benefits of a public repository include:
         secretRef:
             name: github-deploy-key
     ```
+
 7. Commit and push changes
 8. Force flux to reconcile your changes
+
     ```sh
     task cluster:reconcile
     ```
+
 9. Verify git repository is now using SSH:
+
     ```sh
     task cluster:gitrepositories
     ```
+
 10. Optionally set your repository to Private in your repository settings.
+
 </details>
 
 ### 💨 Kubernetes Dashboard

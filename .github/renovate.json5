@@ -32,8 +32,8 @@
   },
   "kubernetes": {
     "fileMatch": [
-      "ansible/.+\\.ya?ml.j2$",
-      "kubernetes/.+\\.ya?ml$"
+      "provision/ansible/.+\\.ya?ml.j2$",
+      "provision/kubernetes/.+\\.ya?ml$"
     ]
   },
   "regexManagers": [
